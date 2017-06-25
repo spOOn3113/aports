@@ -44,11 +44,45 @@ build() {
 
 package() {
 	cd "$builddir"
-	cd "$builddir"
+	install -v -dm755 "$pkgdir/usr/bin"
+#	install -v -m755 VBox.sh "$pkgdir/usr/bin/VBox"
+	echo "2"
+	for i in VBoxHeadless VBoxManage VBoxSDL VirtualBox vboxwebsrv VBoxBalloonCtrl; do
+		ln -sf VBox "$pkgdir/usr/bin/$i"
+#		ln -sf VBox "$pkgdir/usr/bin/${i,,}"
+	done
+	echo "3"
+	install -v -dm755 "$pkgdir/usr/lib/virtualbox"
+	install -v -m755 *.so "$pkgdir/usr/lib/virtualbox"
+	install -v -m644 *.rc *.r0 VBoxEFI*.fd "$pkgdir/usr/lib/virtualbox"
+	## setuid root binaries
+	echo "4"
+	install -v -m4755 VBoxSDL VirtualBox VBoxHeadless VBoxNetDHCP VBoxNetAdpCtl VBoxNetNAT -t "$pkgdir/usr/lib/virtualbox"
+	
+	## components
+	install -v -dm755 "$pkgdir/usr/lib/virtualbox/components"
+	install -v -m755 components/* -t "$pkgdir/usr/lib/virtualbox/components"
+
+	## other binaries
+	install -v -m755 VBoxManage VBoxSVC VBoxExtPackHelperApp VBoxXPCOMIPCD VBoxTestOGL VBoxBalloonCtrl vboxwebsrv webtest -t "$pkgdir/usr/lib/virtualbox"
 	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxService "$pkgdir/usr/sbin/VBoxService"
 	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxControl "$pkgdir/usr/bin/VBoxControl"
 	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/mount.vboxsf "$pkgdir/usr/sbin/mount.vboxsf"
 	install -v -Dm644 "$builddir"/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+
+	# icons
+	install -v -Dm644 VBox.png "$pkgdir/usr/share/pixmaps/VBox.png"
+	pushd icons >/dev/null
+	for i in *; do
+		install -d "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
+		cp $i/* "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
+	done
+	popd >/dev/null
+
+	#install configuration
+	install -dm755 "$pkgdir/etc/vbox"
+	echo 'INSTALL_DIR=/usr/lib/virtualbox' > "$pkgdir/etc/vbox/vbox.cfg"
+
 }
 
 sha512sums="e48457371c9139fc04477c82fbd18974378fde08af2a6f9058a0eafa6e522987bd129b8d87c9f381789c4e817aded752fde6ea7fcb2ade471997373802e09348  VirtualBox-5.1.22.tar.bz2
