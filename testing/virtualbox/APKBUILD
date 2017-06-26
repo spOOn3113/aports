@@ -36,52 +36,56 @@ prepare() {
 
 build() {
 	cd "$builddir"
+	read -p "we will pause here"
 	CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:/usr/include/libxml2/
 	./configure --disable-sdl --disable-pulse --disable-opengl --with-linux=/usr --nofatal
 	source ./env.sh
 	kmk KBUILD_VERBOSE=2 all
+	read -p "we will pause here again"
 }
 
 package() {
-	cd "$builddir"
-	install -v -dm755 "$pkgdir/usr/bin"
-#	install -v -m755 VBox.sh "$pkgdir/usr/bin/VBox"
-	echo "2"
-	for i in VBoxHeadless VBoxManage VBoxSDL VirtualBox vboxwebsrv VBoxBalloonCtrl; do
-		ln -sf VBox "$pkgdir/usr/bin/$i"
-#		ln -sf VBox "$pkgdir/usr/bin/${i,,}"
-	done
-	echo "3"
-	install -v -dm755 "$pkgdir/usr/lib/virtualbox"
-	install -v -m755 *.so "$pkgdir/usr/lib/virtualbox"
-	install -v -m644 *.rc *.r0 VBoxEFI*.fd "$pkgdir/usr/lib/virtualbox"
-	## setuid root binaries
-	echo "4"
-	install -v -m4755 VBoxSDL VirtualBox VBoxHeadless VBoxNetDHCP VBoxNetAdpCtl VBoxNetNAT -t "$pkgdir/usr/lib/virtualbox"
-	
-	## components
-	install -v -dm755 "$pkgdir/usr/lib/virtualbox/components"
-	install -v -m755 components/* -t "$pkgdir/usr/lib/virtualbox/components"
-
-	## other binaries
-	install -v -m755 VBoxManage VBoxSVC VBoxExtPackHelperApp VBoxXPCOMIPCD VBoxTestOGL VBoxBalloonCtrl vboxwebsrv webtest -t "$pkgdir/usr/lib/virtualbox"
-	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxService "$pkgdir/usr/sbin/VBoxService"
-	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxControl "$pkgdir/usr/bin/VBoxControl"
-	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/mount.vboxsf "$pkgdir/usr/sbin/mount.vboxsf"
-	install -v -Dm644 "$builddir"/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
-
-	# icons
-	install -v -Dm644 VBox.png "$pkgdir/usr/share/pixmaps/VBox.png"
-	pushd icons >/dev/null
-	for i in *; do
-		install -d "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
-		cp $i/* "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
-	done
-	popd >/dev/null
-
-	#install configuration
-	install -dm755 "$pkgdir/etc/vbox"
-	echo 'INSTALL_DIR=/usr/lib/virtualbox' > "$pkgdir/etc/vbox/vbox.cfg"
+	cd "$builddir"/out/linux.amd64/release/bin/src
+	make
+	make install
+#	install -v -dm755 "$pkgdir/usr/bin"
+##	install -v -m755 VBox.sh "$pkgdir/usr/bin/VBox"
+#	echo "2"
+#	for i in VBoxHeadless VBoxManage VBoxSDL VirtualBox vboxwebsrv VBoxBalloonCtrl; do
+#		ln -sf VBox "$pkgdir/usr/bin/$i"
+##		ln -sf VBox "$pkgdir/usr/bin/${i,,}"
+#	done
+#	echo "3"
+#	install -v -dm755 "$pkgdir/usr/lib/virtualbox"
+#	install -v -m755 *.so "$pkgdir/usr/lib/virtualbox"
+#	install -v -m644 *.rc *.r0 VBoxEFI*.fd "$pkgdir/usr/lib/virtualbox"
+#	## setuid root binaries
+#	echo "4"
+#	install -v -m4755 VBoxSDL VirtualBox VBoxHeadless VBoxNetDHCP VBoxNetAdpCtl VBoxNetNAT -t "$pkgdir/usr/lib/virtualbox"
+#	
+#	## components
+#	install -v -dm755 "$pkgdir/usr/lib/virtualbox/components"
+#	install -v -m755 components/* -t "$pkgdir/usr/lib/virtualbox/components"
+#
+#	## other binaries
+##	install -v -m755 VBoxManage VBoxSVC VBoxExtPackHelperApp VBoxXPCOMIPCD VBoxTestOGL VBoxBalloonCtrl vboxwebsrv webtest -t "$pkgdir/usr/lib/virtualbox"
+#	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxService "$pkgdir/usr/sbin/VBoxService"
+#	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/VBoxControl "$pkgdir/usr/bin/VBoxControl"
+#	install -v -Dm755 "$builddir"/out/linux.*/release/bin/additions/mount.vboxsf "$pkgdir/usr/sbin/mount.vboxsf"
+#	install -v -Dm644 "$builddir"/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+#
+##	# icons
+#	install -v -Dm644 VBox.png "$pkgdir/usr/share/pixmaps/VBox.png"
+#	pushd icons >/dev/null
+#	for i in *; do
+#		install -d "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
+#		cp $i/* "$pkgdir/usr/share/icons/hicolor/$i/mimetypes"
+#	done
+#	popd >/dev/null
+#
+#	#install configuration
+#	install -dm755 "$pkgdir/etc/vbox"
+#	echo 'INSTALL_DIR=/usr/lib/virtualbox' > "$pkgdir/etc/vbox/vbox.cfg"
 
 }
 
@@ -92,4 +96,4 @@ b1c47cb910ac751df7bd4bc10c5501e91d88a9b3e4fe181b02755d433df8e89a160a38422912266f
 2c329085915f0ffa43828a14d8b29d0d876e48e18a0190ad146cd0731af7eca11cdf41d2e533c9cc73aa75506b9b91e3a08f2272cd8884e0d929722730b99862  musl-fix-stat-nsec.patch
 56c5c3a0becd8f1886010f5f231aa1d2e129bf188f8220e111fb9d51c191a429940edec700f5286b46dadbb45b62e67ee4e09fec6bcea61a344fb65afcbd6756  musl-sched_yield.patch
 d2bba9de80c40bc258b025a8e3395a4b0b7781d70d5528993f0fff57e9fc015306b483d4da14e22aed3f188ffda8685aa51e13943f48c17ae18a2a66d15d7bbb  uclibc-gnu_linux.patch
-43555e442f85424c957d51a737394c6f2ec0782e5b8701e3bc6a08d17ae2e8e6e9e85734d69853f7151f91f951a9a921c4f0c5d5f6b72e8379526c49f070d49b  virtualbox-localconfig"
+fcfef127ed798ec599386fed26e75d83b7c9c43f09b6b4d9e1b2cc069d6717ca4dad702d6cda09b353fa511b591a9680d14c717d4ead20f443075dfcd351870c  virtualbox-localconfig"
